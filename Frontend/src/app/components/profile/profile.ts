@@ -17,8 +17,7 @@ export class Profile implements OnInit {
   isLoading = true;
   errorMessage = '';
   isUploadingPhoto = false;
-  showPassword = false;
-  
+
   // Password change fields
   oldPassword = '';
   newPassword = '';
@@ -26,12 +25,9 @@ export class Profile implements OnInit {
   isUpdatingPassword = false;
   passwordMessage = '';
   passwordError = '';
-  
+
   // Visibility toggles
   isChangePasswordVisible = false;
-  showNewPassword = false;
-  showConfirmPassword = false;
-  showOldPassword = false;
 
   constructor(
     private authService: AuthService,
@@ -70,50 +66,26 @@ export class Profile implements OnInit {
     const file = input.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      const base64 = reader.result as string;
-
-      this.isUploadingPhoto = true;
-      this.errorMessage = '';
-      this.cdr.detectChanges();
-
-this.authService.updateProfilePicture(base64).subscribe({
-  next: (updatedUser) => {
-    const userWithPicture = {
-      ...updatedUser,
-      profilePicture: updatedUser.profilePicture || base64,
-    };
-
-    this.user = userWithPicture;
-    (this.authService as any)._currentUser = userWithPicture;
-
-    this.isUploadingPhoto = false;
+    this.isUploadingPhoto = true;
+    this.errorMessage = '';
     this.cdr.detectChanges();
-  },
-  error: () => {
-    this.errorMessage = 'Failed to update profile picture.';
-    this.isUploadingPhoto = false;
-    this.cdr.detectChanges();
-  },
-});
-    };
 
-    reader.onerror = () => {
-      this.errorMessage = 'Failed to read image.';
-      this.isUploadingPhoto = false;
-      this.cdr.detectChanges();
-    };
+    this.authService.updateProfilePicture(file).subscribe({
+      next: (updatedUser) => {
+        this.user = updatedUser;
+        this.isUploadingPhoto = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.errorMessage = 'Failed to update profile picture.';
+        this.isUploadingPhoto = false;
+        this.cdr.detectChanges();
+      },
+    });
 
-    reader.readAsDataURL(file);
     input.value = '';
   }
 
-  togglePassword(): void {
-    this.showPassword = !this.showPassword;
-    this.cdr.detectChanges();
-  }
 
   logout(): void {
     this.authService.logout().subscribe({
@@ -174,21 +146,6 @@ changePassword(): void {
 
   toggleChangePassword(): void {
     this.isChangePasswordVisible = !this.isChangePasswordVisible;
-    this.cdr.detectChanges();
-  }
-
-  toggleNewPassword(): void {
-    this.showNewPassword = !this.showNewPassword;
-    this.cdr.detectChanges();
-  }
-
-  toggleConfirmPassword(): void {
-    this.showConfirmPassword = !this.showConfirmPassword;
-    this.cdr.detectChanges();
-  }
-
-  toggleOldPassword(): void {
-    this.showOldPassword = !this.showOldPassword;
     this.cdr.detectChanges();
   }
 
